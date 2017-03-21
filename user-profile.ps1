@@ -28,13 +28,19 @@ function vsts(){
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 function Zip($Source, $destination){
+    if (-Not $destination){
+        $destination = "$source.zip"
+    }
     Write-Host ("Zipping "+ $Source + " to " + $destination)
     [System.IO.Compression.ZipFile]::CreateFromDirectory($Source,$destination)
 }
 
 function Unzip ($zipFile, $outpath)
 {
-    Write-Host ("Writing " + $zipFile + "to " + $outpath)
+    if (-Not $outpath){
+        $outpath = $zipFile.Substring(0,$zipFile.Length - 4)
+    }
+    Write-Host ("Writing " + $zipFile + " to " + $outpath)
     [System.IO.Compression.ZipFile]::ExtractToDirectory($zipfile, $outpath)
 }
 
@@ -70,13 +76,14 @@ function UnOrig ()
 #>
 
 [ScriptBlock]$PrePrompt = {
-    Write-Host (Get-Date -format "yyyy.MM.dd.HH.mm.ss") -ForegroundColor DarkBlue
+    
 }
 
 # Replace the cmder prompt entirely with this.
 # [ScriptBlock]$CmderPrompt = {}
 
 [ScriptBlock]$PostPrompt = {
+    Write-Host (Get-Date -format "yyyy.MM.dd.HH.mm.ss") -ForegroundColor DarkBlue
 }
 
 ## <Continue to add your own>
