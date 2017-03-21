@@ -1,33 +1,40 @@
 # SecretSauce
-This is pretty much how you I get my windows machines up and running for some basic development.
-Feel free to make some suggestions.
+These are some of the free basic tools that I use day to day. I've also included some of my startup scripts, profiles, and aliases.
 
-
-## Step 1: Install GitExtensions
+## 1: [GitExtensions](https://gitextensions.github.io/)
+Still the best Git Gui I've ever worked with. 
         
-## Step 2: Install ConEmu
+## 2: [Visual Studio Code](http://code.visualstudio.com)
+It took a long time, but it's finally replaced Sublime.
 
-## Step 3: Install Visual Studio Code
+## 3: [Cmder](http://cmder.net/)
 
-## Step 4: Install Sublime Text
-Because you still need it every onece in a while...
+I just started using Cmdr over ConEmu. Same team I think. I usually just run it out of my downloads folder.
 
-## Step 5: Install your powershell startup script
-Just has a few of my favorite things.
-I got the file path [here](https://blogs.technet.microsoft.com/heyscriptingguy/2012/05/21/understanding-the-six-powershell-profiles/).
+## 4: My Git Aliases
 
-First set the execution policy as admin:
-
-`Set-ExecutionPolicy -ExecutionPolicy Unrestricted`
-
-Then add in your startup script:
+Run this in a bash/terminal:
 ```
-New-Item -ItemType File -Force -Path $Profile
-cp .\Microsoft.PowerShell_profile.ps1 $profile
+# Better Git Log : https://coderwall.com/p/euwpig/a-better-git-log
+git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
+
+#Show me the changes
+git config --global alias.changes "diff HEAD^"
+
+#Reset Everything!
+git config --global alias.fu "!git reset --hard && git clean -fdx ."
+
+#Status
+git config --global alias.st "status"
 ```
 
-## Step 6: Get your git aliases on point
-todo...
+## 4: My Powershell Startup Script
+
+If you're using Cmder, and you don't want to replace your actual Powershell profile, do this:
+
+```
+cp .\user-profile.ps1 "$($ENV:HOMEPATH)\Downloads\cmder\config\"
+```
 
 ## Step 7: Get your bashrc set up
 todo...
