@@ -3,13 +3,13 @@
 #
 
 #Modular Font: http://patorjk.com/software/taag/#p=display&f=Modular&t=Type%20Something%20
-Write-Host " _______  _______  ______    _______  __    _  _______    _______  __   __  _______  ___      ___     "
-Write-Host "|   _   ||   _   ||    _ |  |       ||  |  | ||       |  |       ||  | |  ||       ||   |    |   |    "
-Write-Host "|  |_|  ||  |_|  ||   | ||  |   _   ||   |_| ||  _____|  |  _____||  |_|  ||    ___||   |    |   |    "
-Write-Host "|       ||       ||   |_||_ |  | |  ||       || |_____   | |_____ |       ||   |___ |   |    |   |    "
-Write-Host "|       ||       ||    __  ||  |_|  ||  _    ||_____  |  |_____  ||       ||    ___||   |___ |   |___ "
-Write-Host "|   _   ||   _   ||   |  | ||       || | |   | _____| |   _____| ||   _   ||   |___ |       ||       |"
-Write-Host "|__| |__||__| |__||___|  |_||_______||_|  |__||_______|  |_______||__| |__||_______||_______||_______|"
+Write-Host " _______  _______  ______    _______  __    _  _______  __   __  _______  ___      ___     "
+Write-Host "|   _   ||   _   ||    _ |  |       ||  |  | ||       ||  | |  ||       ||   |    |   |    "
+Write-Host "|  |_|  ||  |_|  ||   | ||  |   _   ||   |_| ||  _____||  |_|  ||    ___||   |    |   |    "
+Write-Host "|       ||       ||   |_||_ |  | |  ||       || |_____ |       ||   |___ |   |    |   |    "
+Write-Host "|       ||       ||    __  ||  |_|  ||  _    ||_____  ||       ||    ___||   |___ |   |___ "
+Write-Host "|   _   ||   _   ||   |  | ||       || | |   | _____| ||   _   ||   |___ |       ||       |"
+Write-Host "|__| |__||__| |__||___|  |_||_______||_|  |__||_______||__| |__||_______||_______||_______|"
 
 Set-Alias ge 'C:\Program Files (x86)\GitExtensions\GitExtensions.exe'
 Set-Alias kdiff3 'C:\Program Files (x86)\KDiff3\kdiff3.exe'
@@ -26,6 +26,11 @@ function vsts(){
 }
 
 Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+function Zip($Source, $destination){
+    Write-Host ("Zipping "+ $Source + " to " + $destination)
+    [System.IO.Compression.ZipFile]::CreateFromDirectory($Source,$destination)
+}
 
 function Zip($Source, $destination){
     if (-Not $destination){
@@ -65,6 +70,23 @@ function UnOrig ()
     get-childitem . -include *.orig -recurse | foreach ($_) {remove-item $_.fullname}
 }
 
+function ohshitgit()
+{
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$branchname      
+    ) 
+    git branch $branchname
+    git reset HEAD~ --hard
+    git checkout $branchname
+}
+
+function StartupScript(){
+    code C:\Users\aroach\Downloads\cmder\config\user-profile.ps1
+}
+
+
+
 ## Prompt Customization
 <#
 .SYNTAX
@@ -76,15 +98,49 @@ function UnOrig ()
 #>
 
 [ScriptBlock]$PrePrompt = {
-    
+    Write-Host (Get-Date -format "yyyy.MM.dd.HH.mm.ss") -ForegroundColor DarkBlue
 }
 
 # Replace the cmder prompt entirely with this.
 # [ScriptBlock]$CmderPrompt = {}
 
 [ScriptBlock]$PostPrompt = {
-    Write-Host (Get-Date -format "yyyy.MM.dd.HH.mm.ss") -ForegroundColor DarkBlue
+    
 }
 
 ## <Continue to add your own>
 
+##############
+# TODOIST STUFF
+#############
+
+add-type -AssemblyName "System.Web"
+
+$filters = @{
+    workOverdueToday="(overdue | 1 days) & p:Work";
+    quickWork = "@2min & p:Work";
+    unscheduledWork = "p:Work & no date";
+    work = "p:Work"
+}
+
+function todo ($filter){
+    if (-not $filter){$filter = $filters.workOverdueToday}
+    $encodedFilter = [System.Web.HttpUtility]::UrlEncode($filter)
+    
+    #(Invoke-RestMethod "https://beta.todoist.com/API/v8/tasks?token=$token&filter=$encodedFilter") | Sort-Object priority, order -descending | Select @{Name="THINGS TO DO";Expression={$_.content}}
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    (Invoke-RestMethod "http://beta.todoist.com/API/v8/tasks?token=$token&filter=$encodedFilter") `
+        | Sort-Object {$_.due.datetime}, @{Expression={$_.priority};Descending=$true}, order `
+        | Select-Object @{Name="THINGS TO DO";Expression={$_.content}}, @{Name="WHEN";Expression={([System.TimeZoneInfo]::ConvertTime([datetime]$_.due.datetime, [System.TimeZoneInfo]::FindSystemTimeZoneById("Central Standard Time"))).ToShortTimeString()}}
+}
+
+function todoRaw($filter){
+    $encodedFilter = [System.Web.HttpUtility]::UrlEncode($filter)
+    Invoke-RestMethod "https://beta.todoist.com/API/v8/tasks?token=$token&filter=$encodedFilter"
+}
+
+function todoist () {
+    start "http://www.todoist.com"
+}
+
+Todo $filters.workOverdueToday
